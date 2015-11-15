@@ -10,9 +10,9 @@ import calendar
 import time
 import ConfigParser
 
+# Pulls in private data from config file
 config = ConfigParser.ConfigParser()
-config_read = config.read('/home/kevin/Documents/python_scripts/desk_config.ini')
-
+config.read('/home/kevin/Documents/python_scripts/Desk.com/config/desk_config.ini')
 url_1 = config.get('DeskCredentials', 'DeskURL1')
 url_2 = config.get('DeskCredentials', 'DeskURL2')
 auth = config.get('DeskCredentials', 'Authorization')
@@ -20,20 +20,29 @@ username = config.get('KermitCredentials', 'Username')
 password = config.get('KermitCredentials', 'Password')
 ip_address = config.get('KermitCredentials', 'IPAddress')
 
+#Creates main list
 cases_list = []
 column_headers_cases = ['case_id', 'created_at', 'type', 'status', 'updated_at', 'received_at', 'first_resolved_at', 'resolved_at']
 cases_list.append(column_headers_cases)
 
+# Create initial values for main for loop
 page_counter = 1
 loops = 499
 
+# epoch is the utc time code where the script will start pulling data from
 epoch = '1420092000'
 
+# Use custom adapters to force script to keep trying if Internet connection is temporarily lost
+session = requests.Session()
+session.mount = ('http://', requests.adapters.HTTPAdapter(max_retries=10))
+session.mount = ('https://', requests.adapters.HTTPAdapter(max_retries=10))
+
+# Execution of main script
 while loops > 0:
 	page_counter_string = str(page_counter)
 	desk = url_1 + epoch + url_2 + page_counter_string
 	header = {'Authorization': 'Basic ' + auth, 'Accept': 'application/json'}
-	case_response = requests.get(desk, headers=header)
+	case_response = session.get(url=desk, headers=header)
 	case_response_dict = json.loads(case_response.text)
 	if '_embedded' in case_response_dict:
 		for entry in case_response_dict['_embedded']['entries']:
@@ -85,17 +94,15 @@ while loops > 0:
 		else:
 			print loops
 	else:
+		# Creates tab-delimited .csv file list of lists
 		with open('/home/kevin/data/desk/cases/cases_new.csv', 'wb') as f:
 			writer = csv.writer(f, delimiter='	')
 			writer.writerows(cases_list)
+		time.sleep(15)
+		#Pushes tab-delimited file to DataHub
+		creds = (username, password)
+		headers = {'Accept': 'application/octet-stream'}
+		infile = open('/home/kevin/data/desk/cases/cases_new.csv')
+		r = requests.put(ip_address + '/kermit/api/files/user/kevin-mouritsen/desk_cases_stage/cases.csv?overwrite=true', data=infile, auth=creds, headers=headers, verify=False)
 		loops = 0
-
-time.sleep(15)
-
-creds = (username, password)
-headers = {'Accept': 'application/octet-stream'}
-
-infile = open('@/home/kevin/data/desk/labels/labels.csv')
-
-r = requests.put(ip_address + '/kermit/api/files/user/kevin-mouritsen/desk_labels_stage/labels.csv?overwrite=true', data=infile, auth=creds, headers=headers, verify=False)
-
+		print 'Script Completed'
