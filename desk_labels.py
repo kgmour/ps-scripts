@@ -55,6 +55,7 @@ while loops > 0:
 			case_id_string = str(case_id)
 			updated_at = entry['updated_at']
 			label = url_3 + case_id_string + '/labels'
+			time.sleep(.2)
 			label_response = session.get(url=label, headers=header)
 			try:
 				label_response_dict = json.loads(label_response.text)
@@ -68,7 +69,6 @@ while loops > 0:
 				labels_list.append(labels)
 		loops = loops - 1
 		page_counter = page_counter + 1
-		time.sleep(.7)
 		if loops == 1:
 			loops = 499
 			page_counter = 1

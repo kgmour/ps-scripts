@@ -25,7 +25,7 @@ cases_list = []
 column_headers_cases = ['case_id', 'created_at', 'type', 'status', 'updated_at', 'received_at', 'first_resolved_at', 'resolved_at']
 cases_list.append(column_headers_cases)
 
-# Create initial values for main for loop
+# Create initial values for main loop
 page_counter = 1
 loops = 499
 
@@ -34,8 +34,8 @@ epoch = '1420092000'
 
 # Use custom adapters to force script to keep trying if Internet connection is temporarily lost
 session = requests.Session()
-session.mount = ('http://', requests.adapters.HTTPAdapter(max_retries=10))
-session.mount = ('https://', requests.adapters.HTTPAdapter(max_retries=10))
+session.mount = ('http://', requests.adapters.HTTPAdapter(max_retries=5))
+session.mount = ('https://', requests.adapters.HTTPAdapter(max_retries=5))
 
 # Execution of main script
 while loops > 0:
