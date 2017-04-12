@@ -46,3 +46,5 @@ if __name__ == '__main__':
     ibm_domains = pull_domains_and_remove_duplicates(ibm_report)
     ibm_list = create_dict_of_domains_and_convert_to_list(ibm_domains)
     create_csv_with_domain_and_number_of_users_on_that_domain(ibm_list)
+
+    
